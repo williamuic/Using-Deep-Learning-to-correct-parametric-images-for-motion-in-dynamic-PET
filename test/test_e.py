@@ -2,11 +2,10 @@ import os
 import torch
 import numpy as np
 from options.test_options import TestOptions
-from data import create_dataset
 from models import create_model
 from util.visualizer import save_images
 from util import html
-from hdf5_processing_separate import create_dataloader
+from data_preprocessing.hdf5_processing_separate import create_dataloader
 
 def denormalize(tensor, min_value, max_value):
     return ((tensor + 1) / 2 * (max_value - min_value)) + min_value
