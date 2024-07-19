@@ -16,7 +16,7 @@ import subprocess
 #%%
 os.chdir('/SAN/inm/moco/William/Thesis/Using-Deep-Learning-to-correct-parametric-images-for-motion-in-dynamic-PET/data_simulation/')
 template=pet.AcquisitionData('Siemens mMR',span=11, max_ring_diff=60)
-template.write('template_sinogram_mMR.hs')
+#template.write('template_sinogram_mMR.hs')
 #%%
 # attn_image = pet.ImageData('atn.hv')
 # #%% save max for future displays
@@ -24,7 +24,7 @@ template.write('template_sinogram_mMR.hs')
 #     image = pet.ImageData(f'dat_frame_{i+1}.hv')
 #     cmax = image.max()*.6
 
-#     acq_model_for_attn = pet.AcquisitionModelUsingRayTracingMatrix()
+#     acq_model_for_attn = pet.AcquisitionModelUsingParallelproj()
 #     asm_attn = pet.AcquisitionSensitivityModel(attn_image, acq_model_for_attn)
 #     asm_attn.set_up(template)
 #     attn_factors = asm_attn.forward(template.get_uniform_copy(1))
@@ -57,13 +57,15 @@ template.write('template_sinogram_mMR.hs')
 #     recon.process()
 #     reconstructed_image=recon.get_output()
 #     reconstructed_image.write(f'frame{i+1}.hv')
-#%% 
-attn_image = pet.ImageData('atn_motion.hv')
-for i in range(16):
+
+
+#%%
+for i in range(16,32):
     image = pet.ImageData(f'dat_frame_motion{i+1}.hv')
+    attn_image = pet.ImageData(f'atn_motion{i+1}.hv')
     cmax = image.max()*.6
 
-    acq_model_for_attn = pet.AcquisitionModelUsingRayTracingMatrix()
+    acq_model_for_attn = pet.AcquisitionModelUsingParallelproj()
     asm_attn = pet.AcquisitionSensitivityModel(attn_image, acq_model_for_attn)
     asm_attn.set_up(template)
     attn_factors = asm_attn.forward(template.get_uniform_copy(1))
@@ -96,9 +98,8 @@ for i in range(16):
     recon.process()
     reconstructed_image=recon.get_output()
     reconstructed_image.write(f'frame_motion{i+1}.hv')
-    
 
-#%%
+# #%%
 # img = pet.ImageData('frame5.nii')
 # mo_img = pet.ImageData('frame_motion1.hv')
 # plt.imshow(img.as_array()[64,:,:])
@@ -119,33 +120,14 @@ for i in range(16):
 # #%%
 # for i in range(16):
 #     subprocess.run(f'stir_math --output-format {pardir}/samples/stir_math_ITK_output_file_format.par frame{i+1}.nii frame{i+1}.hv', shell=True, capture_output=True, text=True)
+# for i in range(32):
 #     subprocess.run(f'stir_math --output-format {pardir}/samples/stir_math_ITK_output_file_format.par frame_motion{i+1}.nii frame_motion{i+1}.hv', shell=True, capture_output=True, text=True)
 
 # # %%
-# img = pet.ImageData('frame1.nii')
+# img = pet.ImageData('frame16.nii')
 
 # # %%
 # print(img.shape)
 # #%%
 # plt.imshow(img.as_array()[:,128,:])
-# # %%
-# images = []
-# for i in range(16):
-#     img = pet.ImageData(f'frame{i+1}.nii').as_array()
-#     images.append(img)
-# images = np.stack(images)
-# # %%
-# from scipy.io import savemat
-# images_dict = {'img':images}
-# savemat('images.mat',images_dict)
-# # %%
-# images = []
-# for i in range(16):
-#     img = pet.ImageData(f'frame_motion{i+1}.nii').as_array()
-#     images.append(img)
-# images = np.stack(images)
-# # %%
-# from scipy.io import savemat
-# images_dict = {'img':images}
-# savemat('images_motion.mat',images_dict)
 # %%
