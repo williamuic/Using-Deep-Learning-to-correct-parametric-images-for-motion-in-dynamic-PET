@@ -130,13 +130,13 @@ def apply_random_transformations_3d(image_data):
 def apply_specified_transformations_3d(image_data):
     num_frames, depth, height, width = image_data.shape
     
-    translations = [-5,-4,-3,-2,2,3,4,5]
-    rotations = [-1,1]
+    translations = [-4, -2, 2, 4]
+    rotations = [-1, 1]
     total_transforms = len(translations) * len(rotations)
-    transformed_images = np.zeros((6 * total_transforms, depth, height, width))
+    transformed_images = np.zeros((num_frames * total_transforms, depth, height, width))
     
     index = 0
-    for frame_idx in range(2,8):
+    for frame_idx in range(0,num_frames,4):
         for translation in translations:
             for rotation in rotations:
                 transformed_images[index] = rigid_motion_3d(image_data[frame_idx], [translation,translation,translation], [rotation,rotation,rotation])
@@ -144,14 +144,8 @@ def apply_specified_transformations_3d(image_data):
                 
     return transformed_images
 #%%
-emi_img = emi_img.astype(np.float32)
-atn_img = atn_img.astype(np.float32)
-# motion_image_emi = apply_specified_transformations_3d(emi_img)
+motion_image_emi = apply_specified_transformations_3d(emi_img)
 motion_image_atn = apply_specified_transformations_3d(atn_img)
-#%%
-# motion_image_emi = motion_image_emi.astype(np.float32)
-motion_image_atn = motion_image_atn.astype(np.float32)
-
 #%%
 ring_spacing = 0.40625
 z_spacing = ring_spacing/2
@@ -188,13 +182,13 @@ sirf_img.write('atn.hv')
 ### Save motion images in interfile format
 motion_atn_cm = motion_image_atn * 10
 
-for i in range(motion_image_atn.shape[0]):  
+for i in range(motion_image_emi.shape[0]):  
     sirf_img = pet.ImageData()
     sirf_img.initialise((num_planes, 256, 256), vsize=(2.031250, 2.03642, 2.03642))
     
-    # sirf_img.fill(motion_image_emi[i, :, :, :].astype(np.float32))
+    sirf_img.fill(motion_image_emi[i, :, :, :].astype(np.float32))
     
-    # sirf_img.write(f'dat_frame_motion{i+1}.hv')
+    sirf_img.write(f'dat_frame_motion{i+1}.hv')
 
     sirf_img.fill(motion_atn_cm[i,:, :, :].astype(np.float32))
     sirf_img.write(f'atn_motion{i+1}.hv')
@@ -214,5 +208,17 @@ for i in range(16):
 # %%
 subprocess.run(f'stir_math --output-format {pardir}/samples/stir_math_ITK_output_file_format.par atn.nii atn.hv', shell=True, capture_output=True, text=True)
 subprocess.run(f'stir_math --output-format {pardir}/samples/stir_math_ITK_output_file_format.par atn_motion.nii atn_motion.hv', shell=True, capture_output=True, text=True)
+
+# %%
+import sirf.STIR
+import scipy.io
+import os
+images = []
+os.chdir('/slms/inm/research/moco/William/Thesis/Using-Deep-Learning-to-correct-parametric-images-for-motion-in-dynamic-PET/data_simulation')
+for i in range(64):
+    img = sirf.STIR(f'frame_motion{i+1}.hv').as_array()
+    images.append(img)
+images_array = np.array(images)
+scipy.io.savemat('frame_motion_images.mat', {'images': images_array})
 
 # %%

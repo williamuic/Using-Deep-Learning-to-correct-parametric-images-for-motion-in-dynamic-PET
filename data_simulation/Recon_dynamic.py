@@ -60,7 +60,7 @@ template=pet.AcquisitionData('Siemens mMR',span=11, max_ring_diff=60)
 
 
 #%%
-for i in range(16,32):
+for i in range(96):
     image = pet.ImageData(f'dat_frame_motion{i+1}.hv')
     attn_image = pet.ImageData(f'atn_motion{i+1}.hv')
     cmax = image.max()*.6
@@ -130,4 +130,19 @@ for i in range(16,32):
 # print(img.shape)
 # #%%
 # plt.imshow(img.as_array()[:,128,:])
+# %%
+import sirf.STIR
+import scipy.io
+import os
+images = []
+os.chdir('/slms/inm/research/moco/William/Thesis/Using-Deep-Learning-to-correct-parametric-images-for-motion-in-dynamic-PET/data_simulation')
+for i in range(96):
+    img = sirf.STIR.ImageData(f'frame_motion{i+1}.hv').as_array()
+    images.append(img)
+#%%
+import numpy as np
+images_array = np.array(images)
+scipy.io.savemat('frame_motion_images3.mat', {'images': images_array})
+# # %%
+
 # %%
